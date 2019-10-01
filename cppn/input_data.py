@@ -14,6 +14,10 @@ def truncated_normal(x, a=-1, b=1, mean=0.5, std=0.2):
 def sample_z(z_size):
     return truncated_normal(numpy.random.rand(z_size))
 
+def interp_z(z1, z2, n_points):
+    """ Linear interpolation between z1 and z2 """
+    return [ a * z1 + (1.0 - a) * z2 for a in numpy.linspace(0, 1, n_points)]
+    
 @dataclasses.dataclass
 class InputData:
     width: int
