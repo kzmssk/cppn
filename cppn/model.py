@@ -5,6 +5,9 @@ import chainer.links as L
 import dataclasses
 import numpy
 
+from cppn import config_base
+
+
 def post_process(x):
     """ post process of output by forward """
     if isinstance(x, chainer.Variable):
@@ -13,7 +16,7 @@ def post_process(x):
 
 
 @dataclasses.dataclass
-class ModelConfig:
+class ModelConfig(config_base.ConfigBase):
     width: int
     height: int
     n_units_xyrz: int

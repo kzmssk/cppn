@@ -1,0 +1,5 @@
+width: 128
+height: 128
+z_size: 2
+n_units_xyrz: 25
+n_hidden_units: [25, 25, 25]
