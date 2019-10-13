@@ -43,6 +43,11 @@ class CPPN(chainer.Chain):
             self.l_out = L.Linear(None, 1, initialW=initialW)
 
     def forward(self, x, z):
+        assert x.shape[0] % (self.config.width *
+                             self.config.height) == 0, f"Invalid input size x.shape[0] % (width * height) != 0"
+
+        batch_size = x.shape[0] // (self.config.width * self.config.height)
+
         f = self.config.activation
         _x, _y, _r = F.split_axis(x, 3, axis=1)
         h = self.l_x(_x)
@@ -54,5 +59,7 @@ class CPPN(chainer.Chain):
         for i in range(len(self.config.n_hidden_units)):
             h = f(getattr(self, f"l_hidden_{i}")(h))
         h = F.sigmoid(self.l_out(h))
-        h = h.reshape((1, self.config.width, self.config.height))
+        h = F.concat(
+            [_h.reshape((1, self.config.width, self.config.height)) for _h in F.split_axis(h, batch_size, axis=0)],
+            axis=0)
         return h
