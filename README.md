@@ -4,13 +4,17 @@ Implementation of CPPN using Chainer
 
 ### Dependencies
 
-TBD
+See `requirements.txt`
 
 ### How to init
 
 ```bash
+git submodule init
+git submodule update
 pip install -r requirements.txt
 ```
+
+For gpu support, install [CuPy](https://docs-cupy.chainer.org/en/latest/install.html).
 
 ### How to test
 
