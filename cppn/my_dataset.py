@@ -1,3 +1,4 @@
+from pathlib import Path
 import chainer
 import numpy
 from PIL import Image
@@ -23,7 +24,7 @@ class MyDataset(chainer.dataset.DatasetMixin):
         x, z = self.input_data.as_batch()
 
         # open image and convert to [1, 1, W, H]
-        c = Image.open(self.paths[i])
+        c = Image.open(Path(self.paths[i]))
         c = c.resize((self.width, self.height))
 
         c = c.convert('L')

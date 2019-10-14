@@ -1,7 +1,8 @@
-train_image_dir_path: "test/dammy_image_data"
-max_iter: 2
-batch_size: 5
-snapshot_iter_interval: 2
-display_iter_interval: 1
-n_discriminator_update: 3
-evaluation_iter_interval: 1
+# train_image_dir_path: "test/dammy_image_data"
+train_image_path_txt: "tmp/face10000.txt"
+max_iter: 10000
+batch_size: 64
+snapshot_iter_interval: 1000
+display_iter_interval: 100
+n_discriminator_update: 5
+evaluation_iter_interval: 1000

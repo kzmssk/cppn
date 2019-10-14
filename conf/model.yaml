@@ -1,5 +1,5 @@
 width: 64
 height: 64
-n_units_xyrz: 10
-n_hidden_units: [10, 10]
-z_size: 2
+n_units_xyrz: 32
+n_hidden_units : [32, 64, 32, 16]
+z_size: 16
