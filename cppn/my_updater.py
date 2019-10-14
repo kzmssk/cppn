@@ -9,7 +9,7 @@ class MyUpdater(chainer.training.StandardUpdater):
     """ Update discriminator and generator with unconditional generation """
     def __init__(self, iterator: chainer.iterators.SerialIterator, gen: model.CPPN, dis: chainer.Chain,
                  gen_opt: chainer.optimizer.Optimizer, dis_opt: chainer.optimizer.Optimizer,
-                 input_data: input_data.InputData, n_discriminator_update: int):
+                 input_data: input_data.InputData, n_discriminator_update: int, device: int):
         self.generator = gen
         self.discriminator = dis
         self.gen_opt = gen_opt
@@ -19,11 +19,12 @@ class MyUpdater(chainer.training.StandardUpdater):
 
         optimizers = {'gen_opt': gen_opt, 'dis_opt': dis_opt}
         iterator = {'main': iterator}
-        super(MyUpdater, self).__init__(iterator=iterator, optimizer=optimizers)
+        super(MyUpdater, self).__init__(iterator=iterator, optimizer=optimizers, device=device)
 
     def update_core(self):
         gen_opt = self.get_optimizer('gen_opt')
         dis_opt = self.get_optimizer('dis_opt')
+        xp = self.generator.xp
 
         for i in range(self.n_discriminator_update):
             batch = self.get_iterator('main').next()
@@ -35,10 +36,9 @@ class MyUpdater(chainer.training.StandardUpdater):
                 c.append(b[2])
 
             # ndarray -> variable
-            # TODO: to gpu ?
-            x = chainer.Variable(numpy.concatenate(x))
-            z = chainer.Variable(numpy.concatenate(z))
-            c = chainer.Variable(numpy.concatenate(c))
+            x = chainer.Variable(xp.asarray(numpy.concatenate(x)))
+            z = chainer.Variable(xp.asarray(numpy.concatenate(z)))
+            c = chainer.Variable(xp.asarray(numpy.concatenate(c)))
 
             if i == 0:
                 # generator
@@ -55,6 +55,8 @@ class MyUpdater(chainer.training.StandardUpdater):
             y_real = self.discriminator.forward(x_real)
 
             z = self.input_data.sample_z(batch_size)
+            z = chainer.Variable(xp.asarray(z))
+
             x_fake = self.generator(x, z)
             y_fake = self.discriminator(x_fake)
             x_fake.unchain_backward()

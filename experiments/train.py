@@ -1,4 +1,9 @@
 """ Train CPPN model with image dataset """
+# import CPPN modules
+import sys  # isort:skip
+import os  # isort:skip
+sys.path.append(os.getcwd())  # isort:skip
+
 
 import argparse
 import dataclasses
@@ -37,7 +42,7 @@ def init_optimizer(model, alpha, beta1, beta2):
     return opt
 
 
-def train(log_dir_path: Path, train_config: TrainConfig, model_config: model.ModelConfig):
+def train(log_dir_path: Path, train_config: TrainConfig, model_config: model.ModelConfig, device: int):
     """ Train CPPN model on image dataset """
     # init dataset
     paths = list(train_config.train_image_dir_path.glob('*.jpg'))  # TODO: take also PNG images
@@ -50,6 +55,12 @@ def train(log_dir_path: Path, train_config: TrainConfig, model_config: model.Mod
     # init discriminator
     discriminator = sn_discriminator.SNDiscriminator()
 
+    # copy model to device
+    if device >= 0:
+        chainer.cuda.get_device_from_id(device).use()
+        generator.to_gpu()
+        discriminator.to_gpu()
+
     # init optimizers
     gen_opt = init_optimizer(generator, train_config.alpha, train_config.beta1, train_config.beta2)
     dis_opt = init_optimizer(discriminator, train_config.alpha, train_config.beta1, train_config.beta2)
@@ -61,7 +72,8 @@ def train(log_dir_path: Path, train_config: TrainConfig, model_config: model.Mod
                                    gen_opt=gen_opt,
                                    dis_opt=dis_opt,
                                    input_data=train_dataset.input_data,
-                                   n_discriminator_update=train_config.n_discriminator_update)
+                                   n_discriminator_update=train_config.n_discriminator_update,
+                                   device=device)
     trainer = training.Trainer(updater, (train_config.max_iter, 'iteration'), out=log_dir_path)
 
     # --- init updater's hooks (logging)
@@ -89,6 +101,7 @@ def start_train():
     parser.add_argument('log_dir_path', type=Path)
     parser.add_argument('--train_config_path', type=Path, default='./conf/train.yaml')
     parser.add_argument('--model_config_path', type=Path, default='./conf/model.yaml')
+    parser.add_argument('--device', type=int, default=0)
     args = parser.parse_args()
 
     # init log_dir
@@ -108,7 +121,7 @@ def start_train():
     shutil.copyfile(args.model_config_path, args.log_dir_path / args.model_config_path.name)
 
     # start train
-    train(args.log_dir_path, train_config, model_config)
+    train(args.log_dir_path, train_config, model_config, args.device)
 
 
 if __name__ == '__main__':

@@ -9,11 +9,12 @@ from PIL import Image
 from cppn.post_process_output import post_process_output
 
 
-def sample_generate(generator, save_dir_path, input_data, rows=2, cols=2, seed=0):
+def sample_generate(generator, save_dir_path, input_data, rows=5, cols=5, seed=0):
     """ Perform rows*cols images random generation """
     @chainer.training.make_extension()
     def make_image(trainer):
         numpy.random.seed(seed)
+        xp = generator.xp
 
         N = rows * cols  # number of images
 
@@ -27,9 +28,8 @@ def sample_generate(generator, save_dir_path, input_data, rows=2, cols=2, seed=0
         x = numpy.concatenate(x)
         z = numpy.concatenate(z)
 
-        # TODO: to gpu
-        x = chainer.Variable(x)
-        z = chainer.Variable(z)
+        x = chainer.Variable(xp.asarray(x))
+        z = chainer.Variable(xp.asarray(z))
 
         with chainer.using_config('train', False), chainer.using_config('enable_backprop', False):
             x = generator.forward(x, z)
