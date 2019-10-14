@@ -1,1 +1,7 @@
-max_iter: 10
+train_image_dir_path: "test/dammy_image_data"
+max_iter: 2
+batch_size: 5
+snapshot_iter_interval: 2
+display_iter_interval: 1
+n_discriminator_update: 3
+evaluation_iter_interval: 1
