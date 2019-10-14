@@ -50,9 +50,7 @@ class MyUpdater(chainer.training.StandardUpdater):
                 gen_opt.update()
                 chainer.reporter.report({'loss_gen': loss_gen})
 
-            # TODO: to gpu?
-            x_real = c
-            y_real = self.discriminator.forward(x_real)
+            y_real = self.discriminator.forward(c)
 
             z = self.input_data.sample_z(batch_size)
             z = chainer.Variable(xp.asarray(z))
