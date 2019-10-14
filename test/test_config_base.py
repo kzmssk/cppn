@@ -1,8 +1,9 @@
-from cppn.config_base import ConfigBase
 import dataclasses
-import typing
 import pathlib
 import tempfile
+import typing
+
+from cppn.config_base import ConfigBase
 
 
 @dataclasses.dataclass

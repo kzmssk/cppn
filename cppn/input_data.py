@@ -1,5 +1,5 @@
-import typing
 import dataclasses
+
 import numpy
 from scipy.stats import truncnorm
 
@@ -42,3 +42,8 @@ class InputData:
 
         return numpy.concatenate((self.x.reshape(-1, 1), self.y.reshape(-1, 1), self.r.reshape(-1, 1)),
                                  axis=1), numpy.tile(z, (self.width * self.height, 1))
+
+    def sample_z(self, batch_size):
+        """ sample batch of z """
+        z = [numpy.tile(sample_z(self.z_size), (self.width * self.height, 1)) for _ in range(batch_size)]
+        return numpy.concatenate(z, axis=0)

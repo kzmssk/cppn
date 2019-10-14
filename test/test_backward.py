@@ -1,9 +1,10 @@
-from cppn.model import CPPN, ModelConfig
-from cppn.input_data import InputData
-from cppn.conditional_model import ConditionalCPPN, ConditionalModelConfig
-import numpy
-import chainer.functions as F
 import chainer
+import chainer.functions as F
+import numpy
+
+from cppn.conditional_model import ConditionalCPPN, ConditionalModelConfig
+from cppn.input_data import InputData
+from cppn.model import CPPN, ModelConfig
 
 
 def get_dammy_input(batch, width, height, channel):
@@ -13,7 +14,7 @@ def get_dammy_input(batch, width, height, channel):
 
 
 def get_dammy_output(batch, width, height):
-    x = numpy.random.rand(batch, width, height)  # [0, 1]
+    x = numpy.random.rand(batch, 1, width, height)  # [0, 1]
     x *= 255
     return x.astype(numpy.float32)
 

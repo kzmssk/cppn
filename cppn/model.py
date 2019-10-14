@@ -1,18 +1,11 @@
+import dataclasses
 import typing
+
 import chainer
 import chainer.functions as F
 import chainer.links as L
-import dataclasses
-import numpy
 
 from cppn import config_base
-
-
-def post_process(x):
-    """ post process of output by forward """
-    if isinstance(x, chainer.Variable):
-        x = x.data
-    return (x * 255).astype(numpy.uint8)
 
 
 @dataclasses.dataclass
@@ -58,8 +51,9 @@ class CPPN(chainer.Chain):
 
         for i in range(len(self.config.n_hidden_units)):
             h = f(getattr(self, f"l_hidden_{i}")(h))
+
         h = F.sigmoid(self.l_out(h))
         h = F.concat(
-            [_h.reshape((1, self.config.width, self.config.height)) for _h in F.split_axis(h, batch_size, axis=0)],
+            [_h.reshape((1, 1, self.config.width, self.config.height)) for _h in F.split_axis(h, batch_size, axis=0)],
             axis=0)
         return h

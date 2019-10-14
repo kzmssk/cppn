@@ -1,7 +1,8 @@
-import pathlib
 import dataclasses
-import yaml
 import inspect
+import pathlib
+
+import yaml
 
 
 @dataclasses.dataclass
