@@ -7,4 +7,4 @@ def post_process_output(x):
     if isinstance(x, chainer.Variable):
         x = x.data
 
-    return numpy.clip(x * 127.5 + 127.5, 0.0, 255.0).astype(numpy.uint8)
+    return numpy.clip(x * 255.0, 0.0, 255.0).astype(numpy.uint8)
