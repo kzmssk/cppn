@@ -47,7 +47,7 @@ class CPPN(chainer.Chain):
         h += self.l_y(_y)
         h += self.l_r(_r)
         h += self.l_z(z)
-        h = f(h)
+        h = F.softplus(h)
 
         for i in range(len(self.config.n_hidden_units)):
             h = f(getattr(self, f"l_hidden_{i}")(h))

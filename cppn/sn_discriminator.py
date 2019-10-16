@@ -14,25 +14,19 @@ from sn.sn_linear import SNLinear
 
 
 class SNDiscriminator(chainer.Chain):
-    def __init__(self, bottom_width=8, ch=512, wscale=0.02, output_dim=1):
+    def __init__(self, wscale=0.02, ch=6):
         w = chainer.initializers.Normal(wscale)
         super(SNDiscriminator, self).__init__()
         with self.init_scope():
-            self.c0_0 = SNConvolution2D(1, ch // 8, 3, 1, 1, initialW=w)
-            self.c0_1 = SNConvolution2D(ch // 8, ch // 4, 4, 2, 1, initialW=w)
-            self.c1_0 = SNConvolution2D(ch // 4, ch // 4, 3, 1, 1, initialW=w)
-            self.c1_1 = SNConvolution2D(ch // 4, ch // 2, 4, 2, 1, initialW=w)
-            self.c2_0 = SNConvolution2D(ch // 2, ch // 2, 3, 1, 1, initialW=w)
-            self.c2_1 = SNConvolution2D(ch // 2, ch // 1, 4, 2, 1, initialW=w)
-            self.c3_0 = SNConvolution2D(ch // 1, ch // 1, 3, 1, 1, initialW=w)
-            self.l4 = SNLinear(bottom_width * bottom_width * ch, output_dim, initialW=w)
+            self.c_1 = SNConvolution2D(1, ch, 4, 2, 1, initialW=w)
+            self.c_2 = SNConvolution2D(ch, ch * 2, 4, 2, 1, initialW=w)
+            self.c_3 = SNConvolution2D(ch * 2, ch * 4, 3, 2, 1, initialW=w)
+            self.c_4 = SNConvolution2D(ch * 4, ch * 8, 3, 2, 1, initialW=w)
+            self.l_5 = SNLinear(None, 1, initialW=w)
 
     def forward(self, x):
-        h = F.leaky_relu(self.c0_0(x))
-        h = F.leaky_relu(self.c0_1(h))
-        h = F.leaky_relu(self.c1_0(h))
-        h = F.leaky_relu(self.c1_1(h))
-        h = F.leaky_relu(self.c2_0(h))
-        h = F.leaky_relu(self.c2_1(h))
-        h = F.leaky_relu(self.c3_0(h))
-        return self.l4(h)
+        h = F.leaky_relu(self.c_1(x))
+        h = F.leaky_relu(self.c_2(h))
+        h = F.leaky_relu(self.c_3(h))
+        h = F.leaky_relu(self.c_4(h))
+        return self.l_5(h)
