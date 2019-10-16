@@ -41,6 +41,7 @@ def sample_generate(generator, save_dir_path, input_data, rows=5, cols=5, seed=0
         x = post_process_output(x)
 
         x = x.reshape((rows, cols, 1, input_data.height, input_data.width))
+        x = x.transpose((0, 3, 1, 4, 2))
         x = x.reshape(
             (rows * input_data.height, cols * input_data.width))  # output is gray scale so that image array is 2dim
 
