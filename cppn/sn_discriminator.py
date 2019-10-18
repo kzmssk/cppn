@@ -14,7 +14,7 @@ from sn.sn_linear import SNLinear
 
 
 class SNDiscriminator(chainer.Chain):
-    def __init__(self, wscale=0.02, ch=6):
+    def __init__(self, wscale=0.02, ch=24):
         w = chainer.initializers.Normal(wscale)
         super(SNDiscriminator, self).__init__()
         with self.init_scope():

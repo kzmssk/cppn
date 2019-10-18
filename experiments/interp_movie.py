@@ -27,6 +27,8 @@ def interp_movie():
     parser.add_argument('--batch_size', type=int, default=10)
     parser.add_argument('--model_config_path', type=Path, default=Path('./conf/model.yaml'))
     parser.add_argument('--gpu', type=int, default=-1)
+    parser.add_argument('--load', type=Path)
+    parser.add_argument('--size', type=int)
     args = parser.parse_args()
 
     # create directory to put result
@@ -34,7 +36,18 @@ def interp_movie():
 
     # init model
     model_config = ModelConfig.load(args.model_config_path)
+
+    # override size of output
+    if args.size:
+        model_config.width = args.size
+        model_config.height = args.size
+
     model = CPPN(model_config)
+
+    if args.load:
+        assert args.load.exists()
+        print(f"load model from {args.load}")
+        chainer.serializers.load_npz(args.load, model)
 
     # model to gpu
     if args.gpu >= 0:

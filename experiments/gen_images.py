@@ -24,6 +24,8 @@ def gen_images():
     parser.add_argument('--n_cols', type=int, default=5)
     parser.add_argument('--model_config_path', type=Path, default=Path('./conf/model.yaml'))
     parser.add_argument('--gpu', type=int, default=-1)
+    parser.add_argument('--load', type=Path)
+    parser.add_argument('--size', type=int)
     args = parser.parse_args()
 
     batch_size = args.n_rows * args.n_cols
@@ -31,6 +33,16 @@ def gen_images():
     # init model
     model_config = ModelConfig.load(args.model_config_path)
     model = CPPN(model_config)
+
+    # override size of output
+    if args.size:
+        model_config.width = args.size
+        model_config.height = args.size
+
+    if args.load:
+        assert args.load.exists()
+        print(f"load model from {args.load}")
+        chainer.serializers.load_npz(args.load, model)
 
     # model to gpu
     if args.gpu >= 0:
