@@ -31,9 +31,11 @@ class CPPN(chainer.Chain):
             self.l_r = L.Linear(1, self.config.n_units_xyrz, initialW=initialW)
             self.l_z = L.Linear(self.config.z_size, self.config.n_units_xyrz, initialW=initialW)
 
+            input_size = self.config.n_units_xyrz
             for i, n_hidden_unit in enumerate(self.config.n_hidden_units):
-                setattr(self, f"l_hidden_{i}", L.Linear(None, n_hidden_unit, initialW=initialW))
-            self.l_out = L.Linear(None, 1, initialW=initialW)
+                setattr(self, f"l_hidden_{i}", L.Linear(input_size, n_hidden_unit, initialW=initialW))
+                input_size = n_hidden_unit
+            self.l_out = L.Linear(self.config.n_hidden_units[-1], 1, initialW=initialW)
 
     def forward(self, x, z):
         assert x.shape[0] % (self.config.width *

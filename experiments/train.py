@@ -35,6 +35,7 @@ class TrainConfig(config_base.ConfigBase):
     alpha: float = 0.0002  # alpha of adam optimizer
     beta1: float = 0.0  # beta1 of adam optimizer
     beta2: float = 0.9  # beta2 of adam optimizer
+    discriminator_ch_size: int = 24  # size of discriminator filter
 
 
 def init_optimizer(model, alpha, beta1, beta2):
@@ -44,7 +45,7 @@ def init_optimizer(model, alpha, beta1, beta2):
     return opt
 
 
-def train(log_dir_path: Path, train_config: TrainConfig, model_config: model.ModelConfig, device: int):
+def train(log_dir_path: Path, train_config: TrainConfig, model_config: model.ModelConfig, load: typing.Optional[Path]=None, device: int=-1):
     """ Train CPPN model on image dataset """
     # init dataset
 
@@ -63,8 +64,13 @@ def train(log_dir_path: Path, train_config: TrainConfig, model_config: model.Mod
     # init generator
     generator = model.CPPN(model_config)
 
+    if load:
+        chainer.serializers.load_npz(load, generator)
+
     # init discriminator
-    discriminator = sn_discriminator.SNDiscriminator()
+    discriminator = sn_discriminator.SNDiscriminator(ch=train_config.discriminator_ch_size)
+    
+    print(f"generator size = {generator.count_params()}, discriminator_size = {discriminator.count_params()}")
 
     # copy model to device
     if device >= 0:
@@ -112,17 +118,23 @@ def start_train():
     parser.add_argument('log_dir_path', type=Path)
     parser.add_argument('--train_config_path', type=Path, default='./conf/train.yaml')
     parser.add_argument('--model_config_path', type=Path, default='./conf/model.yaml')
+    parser.add_argument('--load', type=Path)
     parser.add_argument('--device', type=int, default=0)
+    parser.add_argument('--overwrite', action='store_true')
     args = parser.parse_args()
 
     # init log_dir
-    args.log_dir_path.mkdir(parents=False, exist_ok=False)
+    args.log_dir_path.mkdir(parents=False, exist_ok=args.overwrite)
 
     # load train config
     train_config = TrainConfig.load(args.train_config_path)
 
     # load model config
     model_config = ModelConfig.load(args.model_config_path)
+
+    # check load
+    if args.load:
+        assert args.load.exists()
 
     # store execution info to log_dir
     trainer_util.snap_exec_info(args.log_dir_path, args)
@@ -132,7 +144,7 @@ def start_train():
     shutil.copyfile(args.model_config_path, args.log_dir_path / args.model_config_path.name)
 
     # start train
-    train(args.log_dir_path, train_config, model_config, args.device)
+    train(args.log_dir_path, train_config, model_config, args.load, args.device)
 
 
 if __name__ == '__main__':
