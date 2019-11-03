@@ -23,8 +23,9 @@ import chainer
 def interp_movie():
     parser = argparse.ArgumentParser(description="Gen gif movie")
     parser.add_argument('--out', type=Path, default=Path('./tmp/out.gif'))
-    parser.add_argument('--frames', type=int, default=100)
-    parser.add_argument('--batch_size', type=int, default=10)
+    parser.add_argument('--frames', type=int, default=10)
+    parser.add_argument('--z_points', type=int, default=10)
+    parser.add_argument('--batch_size', type=int, default=50)
     parser.add_argument('--model_config_path', type=Path, default=Path('./conf/model.yaml'))
     parser.add_argument('--gpu', type=int, default=-1)
     parser.add_argument('--load', type=Path)
@@ -59,11 +60,17 @@ def interp_movie():
 
     # gen frames
     images = []
-    zs = interp_z(sample_z(model_config.z_size), sample_z(model_config.z_size), args.frames)
-    for i in range(0, args.frames, args.batch_size):
+    
+    zs = []
+    for _ in range(args.z_points):
+        zs.extend(
+            interp_z(sample_z(model_config.z_size), sample_z(model_config.z_size), args.frames)
+        )
+
+    for i in range(0, len(zs), args.batch_size):
 
         begin_idx = i
-        end_idx = min(i + args.batch_size, args.frames - 1)
+        end_idx = min(i + args.batch_size, len(zs) - 1)
         print(f"{begin_idx} -> {end_idx}")
 
         # make input batch
@@ -73,7 +80,10 @@ def interp_movie():
             _x, _z = input_data.as_batch(z=_z)
             x.append(_x)
             z.append(_z)
-
+        
+        if len(x) == 0:
+            break
+            
         x = numpy.concatenate(x)
         z = numpy.concatenate(z)
 

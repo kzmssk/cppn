@@ -19,6 +19,9 @@ from cppn import (config_base, model, my_dataset, my_updater, sn_discriminator,
                   trainer_util)
 from cppn.model import ModelConfig
 
+from cppn.mnist_dataset import MnistDataset
+from cppn.emnist_dataset import EMnistDataset
+
 
 @dataclasses.dataclass
 class TrainConfig(config_base.ConfigBase):
@@ -30,6 +33,8 @@ class TrainConfig(config_base.ConfigBase):
     evaluation_iter_interval: int
     n_discriminator_update: int
     display_iter_interval: int
+    emnist_data_path: str
+    dataset_type: str = 'original'
     train_image_dir_path: typing.Optional[Path] = None # root directory of image files
     train_image_path_txt: typing.Optional[Path] = None # path to text files of image file paths
     alpha: float = 0.0002  # alpha of adam optimizer
@@ -49,16 +54,27 @@ def train(log_dir_path: Path, train_config: TrainConfig, model_config: model.Mod
     """ Train CPPN model on image dataset """
     # init dataset
 
-    if train_config.train_image_dir_path is not None:
-        paths = list(train_config.train_image_dir_path.glob('*.jpg'))  # TODO: take also PNG images
-    elif train_config.train_image_path_txt is not None:
-        with open(train_config.train_image_path_txt) as f:
-            paths = f.readlines()
-        paths = [ p.split('\n')[0] for p in paths ]
-    else:
-        raise RuntimeError('train_image_dir_path or train_image_path_txt should be specified')
     
-    train_dataset = my_dataset.MyDataset(paths, model_config.width, model_config.height, model_config.z_size)
+    # init dataset
+    if train_config.dataset_type == 'mnist':
+        train_dataset = MnistDataset(width=model_config.width, height=model_config.height, z_size=model_config.z_size)
+    elif train_config.dataset_type == 'emnist':
+        assert train_config.emnist_data_path is not None, "emnist_data_path should be specified"
+        train_dataset = EMnistDataset(width=model_config.width, height=model_config.height, z_size=model_config.z_size, data_path=train_config.emnist_data_path)
+    elif train_config.dataset_type == 'original':
+        # init path of image files
+        if train_config.train_image_dir_path is not None:
+            paths = list(train_config.train_image_dir_path.glob('*.jpg'))  # TODO: take also PNG images
+        elif train_config.train_image_path_txt is not None:
+            with open(train_config.train_image_path_txt) as f:
+                paths = f.readlines()
+            paths = [ p.split('\n')[0] for p in paths ]
+        else:
+            raise RuntimeError('train_image_dir_path or train_image_path_txt should be specified')
+        train_dataset = my_dataset.MyDataset(paths, model_config.width, model_config.height, model_config.z_size)
+    else:
+        raise NotImplementedError
+
     train_iterator = chainer.iterators.SerialIterator(train_dataset, train_config.batch_size)
 
     # init generator
